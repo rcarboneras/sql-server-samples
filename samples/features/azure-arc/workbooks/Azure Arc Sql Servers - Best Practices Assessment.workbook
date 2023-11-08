@@ -337,15 +337,19 @@
             },
             {
               "columnMatch": "SQLInstance",
-              "formatter": 0,
+              "formatter": 13,
               "formatOptions": {
+                "linkTarget": "Resource",
+                "showIcon": true,
                 "customColumnWidthSetting": "23.5714ch"
               }
             },
             {
               "columnMatch": "Database",
-              "formatter": 0,
+              "formatter": 13,
               "formatOptions": {
+                "linkTarget": "Resource",
+                "showIcon": true,
                 "customColumnWidthSetting": "31.2857ch"
               }
             },
