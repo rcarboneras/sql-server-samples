@@ -12,9 +12,6 @@
       "type": 9,
       "content": {
         "version": "KqlParameterItem/1.0",
-        "crossComponentResources": [
-          "{LogAnalitycsWorkpace}"
-        ],
         "parameters": [
           {
             "id": "5ccbaa77-2a42-4a07-a877-b5a3a6297703",
@@ -53,7 +50,7 @@
             },
             "queryType": 1,
             "resourceType": "microsoft.resourcegraph/resources",
-            "value": "/subscriptions/df77550b-74e4-4b51-a312-a1116f915de8/resourceGroups/RG-LAWS/providers/Microsoft.OperationalInsights/workspaces/LAWS-PRO-01"
+            "value": "/subscriptions/71ac1fd6-9ebc-4a20-9667-b873f7cee091/resourceGroups/Arc-Demo/providers/Microsoft.OperationalInsights/workspaces/LA-AzureArc"
           },
           {
             "id": "95f19603-3001-41ca-8340-621f3887a3b3",
@@ -64,7 +61,7 @@
             "multiSelect": true,
             "quote": "'",
             "delimiter": ",",
-            "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\")\r\n| where TargetType == \"Server\"\r\n| extend ServerName = replace_string(tostring(asmt[7]),\"\\\\\",\"#\")\r\n| distinct ServerName",
+            "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\")\r\n| where TargetType == \"Server\"\r\n| extend ServerName = replace_string(tostring(asmt[7]),\"\\\\\",\"=>\")\r\n| distinct ServerName",
             "crossComponentResources": [
               "{LogAnalitycsWorkpace}"
             ],
@@ -77,7 +74,7 @@
             "queryType": 0,
             "resourceType": "microsoft.operationalinsights/workspaces",
             "value": [
-              "value::all"
+
             ]
           },
           {
@@ -130,6 +127,18 @@
             "value": {
               "durationMs": 2592000000
             }
+          },
+          {
+            "id": "3c0b756d-cfa4-4c45-9eff-81463ca7de57",
+            "version": "KqlParameterItem/1.0",
+            "name": "Help",
+            "type": 2,
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "jsonData": "[\r\n { \"value\": \"Yes\", \"label\": \"Yes\"},\r\n {\"value\": \"No\", \"label\": \"No\", \"selected\":false }\r\n]\r\n",
+            "value": "No"
           }
         ],
         "style": "pills",
@@ -139,10 +148,22 @@
       "name": "parameters - 7"
     },
     {
+      "type": 1,
+      "content": {
+        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.0\t\t  |\r\n"
+      },
+      "conditionalVisibility": {
+        "parameterName": "Help",
+        "comparison": "isEqualTo",
+        "value": "Yes"
+      },
+      "name": "ReleaseNotes"
+    },
+    {
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0   \r\n    and TargetType == \"Server\"\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"#\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | order by Sev, CheckId\r\n    | summarize count() by TargetName \r\n",
+        "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0   \r\n    and TargetType == \"Server\"\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"=>\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | order by Sev, CheckId\r\n    | summarize count() by TargetName \r\n",
         "size": 3,
         "title": "Issues by server",
         "timeContextFromParameter": "TimeRange",
@@ -176,7 +197,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0   \r\n    and TargetType == \"Database\"\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"#\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | order by Sev, CheckId\r\n    | summarize count() by TargetName \r\n",
+        "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0   \r\n    and TargetType == \"Database\"\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"=>\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | order by Sev, CheckId\r\n    | summarize count() by TargetName \r\n",
         "size": 3,
         "title": "Issues by Database",
         "timeContextFromParameter": "TimeRange",
@@ -194,7 +215,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])\r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    | where Sev >= 0\r\n    | extend TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\")\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"#\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | summarize count() by Severity, Sev\r\n    | order by Sev",
+        "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])\r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    | where Sev >= 0\r\n    | extend TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\")\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"=>\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | summarize count() by Severity, Sev\r\n    | order by Sev",
         "size": 3,
         "title": "Issues by severity",
         "timeContextFromParameter": "TimeRange",
@@ -275,7 +296,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "\r\nSqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"#\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    and Severity == \"{severity}\"\r\n    | extend SQLInstance = iff(TargetType == \"Database\",case(ServerName contains \"\\\\\",strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName, \"\\\\\",\"_\")),strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName, \"\\\\\",\"_\"))),\"\")\r\n    | extend Database = iff(TargetType == \"Database\",case(ServerName contains \"\\\\\",strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName, \"\\\\\",\"_\"),\"/Databases/\",tostring(split(TargetName,\":\")[1])),strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName, \"\\\\\",\"_\"),\"/Databases/\",tostring(split(TargetName,\":\")[1]))),\"\")\r\n    | order by Sev, CheckId\r\n    | project TimeGenerated,TargetType, ArcServer =_ResourceId, SQLInstance, Database, HelpLink, Sev, Severity, CheckId, Description, AsmtId\r\n",
+        "query": "\r\nSqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"=>\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    and Severity == \"{severity}\"\r\n  | extend SQLInstance = iff(TargetType == \"Database\",case(_ResourceId contains \"microsoft.compute/virtualmachines\",strcat(split(tolower(_ResourceId),\"microsoft.compute\")[0],\"Microsoft.SqlVirtualMachine/SqlVirtualMachines/\",replace_string(ServerName, \"\\\\\",\"_\")),ServerName contains \"\\\\\",strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName,\"\\\\\",\"_\")),strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName, \"\\\\\",\"_\"))),\"\")\r\n    | extend Database = iff(TargetType == \"Database\",case(\r\n\t_ResourceId contains \"microsoft.compute/virtualmachines\",TargetName,ServerName contains \"\\\\\",strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName, \"\\\\\",\"_\"),\"/Databases/\",tostring(split(TargetName,\":\")[1])),strcat(split(tolower(_ResourceId),\"microsoft.hybridcompute\")[0],\"Microsoft.AzureArcData/SqlServerInstances/\",replace_string(ServerName, \"\\\\\",\"_\"),\"/Databases/\",tostring(split(TargetName,\":\")[1]))),\"\")\r\n    | order by Sev, CheckId\r\n    | project TimeGenerated,TargetType, Machine =_ResourceId, SQLInstance, Database, HelpLink, Sev, Severity, CheckId, Description, AsmtId\r\n",
         "size": 0,
         "showAnalytics": true,
         "title": "Issues by Severity Level: {severity}",
@@ -337,19 +358,15 @@
             },
             {
               "columnMatch": "SQLInstance",
-              "formatter": 13,
+              "formatter": 0,
               "formatOptions": {
-                "linkTarget": "Resource",
-                "showIcon": true,
                 "customColumnWidthSetting": "23.5714ch"
               }
             },
             {
               "columnMatch": "Database",
-              "formatter": 13,
+              "formatter": 0,
               "formatOptions": {
-                "linkTarget": "Resource",
-                "showIcon": true,
                 "customColumnWidthSetting": "31.2857ch"
               }
             },
@@ -430,15 +447,27 @@
               }
             }
           ],
-          "rowLimit": 500,
+          "rowLimit": 2000,
           "filter": true,
+          "sortBy": [
+            {
+              "itemKey": "$gen_link_SQLInstance_3",
+              "sortOrder": 2
+            }
+          ],
           "labelSettings": [
             {
               "columnId": "SQLInstance",
               "label": "SQL Instance"
             }
           ]
-        }
+        },
+        "sortBy": [
+          {
+            "itemKey": "$gen_link_SQLInstance_3",
+            "sortOrder": 2
+          }
+        ]
       },
       "name": "query - 8"
     },
@@ -456,7 +485,7 @@
             "name": "CheckId",
             "type": 2,
             "isRequired": true,
-            "query": "\r\nSqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"#\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    and Severity == \"{severity}\"\r\n    | distinct (CheckId)\r\n|order by CheckId asc\r\n\r\n\r\n   ",
+            "query": "\r\nSqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    |where Sev >= 0\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"=>\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    and Severity == \"{severity}\"\r\n    | distinct (CheckId)\r\n|order by CheckId asc\r\n\r\n\r\n   ",
             "crossComponentResources": [
               "{LogAnalitycsWorkpace}"
             ],
@@ -490,7 +519,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"#\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | where CheckId == \"{CheckId}\"\r\n    |where Sev >= 0\r\n    | order by Sev, CheckId\r\n| project TimeGenerated, CheckId,Display = DisplayString,TargetName,Severity,TargetType,Description,Message,HelpLink,TagsArr",
+              "query": "SqlAssessment_CL\r\n| extend asmt = parse_csv(RawData)\r\n| extend\r\n    AsmtId=tostring(asmt[1]),\r\n    CheckId=tostring(asmt[2]),\r\n    DisplayString=asmt[3],\r\n    Description=tostring(asmt[4]),\r\n    HelpLink=asmt[5],\r\n    TargetType=case(asmt[6] == 1, \"Server\", asmt[6] == 2, \"Database\", \"\"),\r\n    TargetName=tostring(asmt[7]), \r\n    Severity=case(asmt[8] == 30, \"High\", asmt[8] == 20, \"Medium\", asmt[8] == 10, \"Low\", asmt[8] == 0, \"Information\", asmt[8] == 1, \"Warning\", asmt[8] == 2, \"Critical\", \"Passed\"),\r\n    Message=tostring(asmt[9]),\r\n    TagsArr=split(tostring(asmt[10]), \",\"),\r\n    Sev = toint(asmt[8])\r\n    | order by CheckId, _ResourceId\r\n    | join kind=inner\r\n    (\r\n    SqlAssessment_CL\r\n    | extend asmt = parse_csv(RawData)\r\n    | extend\r\n        AsmtId=tostring(asmt[1])   \r\n    | summarize arg_max(TimeGenerated, *) by _ResourceId\r\n    | project AsmtId\r\n    ) on AsmtId\r\n    | extend ServerName = case(TargetType == \"Server\", tostring(asmt[7]), tostring(split(tostring(asmt[7]),\":\",0)[0]))\r\n    | extend ServerNameFilter = replace_string(ServerName,\"\\\\\",\"=>\")\r\n    | where ServerNameFilter in ({ServerName})\r\n    | where CheckId == \"{CheckId}\"\r\n    |where Sev >= 0\r\n    | order by Sev, CheckId\r\n| project TimeGenerated, CheckId,Display = DisplayString,TargetName,Severity,TargetType,Description,Message,HelpLink,TagsArr",
               "size": 0,
               "timeContextFromParameter": "TimeRange",
               "exportedParameters": [
@@ -553,14 +582,14 @@
                     "columnMatch": "Display",
                     "formatter": 0,
                     "formatOptions": {
-                      "customColumnWidthSetting": "42.2857ch"
+                      "customColumnWidthSetting": "30.8571ch"
                     }
                   },
                   {
                     "columnMatch": "TargetName",
                     "formatter": 0,
                     "formatOptions": {
-                      "customColumnWidthSetting": "26.7143ch"
+                      "customColumnWidthSetting": "38.5714ch"
                     }
                   },
                   {
