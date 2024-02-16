@@ -9,6 +9,63 @@
       "name": "text - 3"
     },
     {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "3e8737e6-67b6-45f8-801f-06350cf0fd24",
+            "version": "KqlParameterItem/1.0",
+            "name": "Subscription",
+            "type": 6,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "includeAll": false,
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": [
+              "/subscriptions/71ac1fd6-9ebc-4a20-9667-b873f7cee091"
+            ]
+          },
+          {
+            "id": "8f56f31e-9ffb-4f90-bd5c-58d47481f1fc",
+            "version": "KqlParameterItem/1.0",
+            "name": "Help",
+            "type": 2,
+            "typeSettings": {
+              "additionalResourceOptions": []
+            },
+            "jsonData": "[\r\n { \"value\": \"Yes\", \"label\": \"Yes\"},\r\n {\"value\": \"No\", \"label\": \"No\", \"selected\":true }\r\n]\r\n"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 5"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.0\t\t  |\r\n"
+      },
+      "conditionalVisibility": {
+        "parameterName": "Help",
+        "comparison": "isEqualTo",
+        "value": "Yes"
+      },
+      "name": "ReleaseNotes"
+    },
+    {
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
@@ -85,13 +142,13 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "resources\r\n| where type == \"microsoft.azurearcdata/sqlserverinstances/databases\"\r\n| extend compatibilityLevel =  tostring(properties['compatibilityLevel'])\r\n| extend lastFullBackup = properties['backupInformation']['lastFullBackup']\r\n| extend  lastLogBackup = properties['backupInformation']['lastLogBackup']\r\n| extend Instance = split(['id'],'/Databases')[0]\r\n| project Instance, Database = id ,lastFullBackup = format_datetime(todatetime(lastFullBackup), \"yyyy-MM-dd HH:mm:ss\"),lastLogBackup = format_datetime(todatetime(lastLogBackup), \"yyyy-MM-dd HH:mm:ss\"),compatibilityLevel,recoveryMode = properties.recoveryMode",
+        "query": "resources\r\n| where type == \"microsoft.azurearcdata/sqlserverinstances/databases\"\r\n| extend compatibilityLevel =  tostring(properties['compatibilityLevel'])\r\n| extend lastFullBackup = properties['backupInformation']['lastFullBackup']\r\n| extend lastLogBackup = properties['backupInformation']['lastLogBackup']\r\n| extend Instance = split(['id'],'/Databases')[0]\r\n| extend Subscription = strcat(\"/subscriptions/\",subscriptionId)\r\n| project Subscription,ResourceGroup = strcat(\"/subscriptions/\",subscriptionId,\"/resourceGroups/\",resourceGroup), Instance, Database = id ,lastFullBackup = format_datetime(todatetime(lastFullBackup), \"yyyy-MM-dd HH:mm:ss\"),lastLogBackup = format_datetime(todatetime(lastLogBackup), \"yyyy-MM-dd HH:mm:ss\"),compatibilityLevel,recoveryMode = properties.recoveryMode",
         "size": 3,
         "title": "Databases Backup State",
         "queryType": 1,
-        "resourceType": "microsoft.resources/tenants",
+        "resourceType": "microsoft.resourcegraph/resources",
         "crossComponentResources": [
-          "value::tenant"
+          "{Subscription}"
         ],
         "gridSettings": {
           "formatters": [
@@ -112,8 +169,20 @@
             }
           ],
           "rowLimit": 1000,
-          "filter": true
+          "filter": true,
+          "sortBy": [
+            {
+              "itemKey": "lastFullBackup",
+              "sortOrder": 2
+            }
+          ]
         },
+        "sortBy": [
+          {
+            "itemKey": "lastFullBackup",
+            "sortOrder": 2
+          }
+        ],
         "chartSettings": {
           "showMetrics": false,
           "showLegend": true
