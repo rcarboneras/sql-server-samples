@@ -7,7 +7,7 @@ This section contains workbooks to use with Azure Arc SQL Servers. Please follow
 
 ## Azure Arc SQL Instances
 
-![AzureSqlServerInstances](img/AzureSqlServerInstances.png)
+![AzureSqlServerInstances](img/AzureSqlServerInstances1.png)
 ![](img/AzureSqlServerInstances2.png)
 
 ## Azure Arc SQL Databases
