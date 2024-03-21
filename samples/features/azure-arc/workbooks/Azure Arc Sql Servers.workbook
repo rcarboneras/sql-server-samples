@@ -102,7 +102,7 @@
     {
       "type": 1,
       "content": {
-        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.1\t\t  |\r\n"
+        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.2\t\t  |\r\n"
       },
       "conditionalVisibility": {
         "parameterName": "Help",
@@ -117,6 +117,7 @@
         "version": "KqlItem/1.0",
         "query": "resources\r\n| where type =~ 'microsoft.hybridcompute/machines'\r\n| where resourceGroup in ({ResourceGroup})\r\n| where properties.detectedProperties.mssqldiscovered == \"true\"\r\n| count\r\n| extend Tittle=\"Number of Azure Arc SQL Servers:\"",
         "size": 4,
+        "title": " ",
         "queryType": 1,
         "resourceType": "microsoft.resourcegraph/resources",
         "crossComponentResources": [
@@ -132,7 +133,7 @@
             "columnMatch": "Count",
             "formatter": 12,
             "formatOptions": {
-              "palette": "auto"
+              "palette": "redGreen"
             }
           },
           "showBorder": true,
@@ -148,6 +149,7 @@
         "version": "KqlItem/1.0",
         "query": "resources\r\n| where type =~ \"Microsoft.AzureArcData/sqlServerInstances\"\r\n| where resourceGroup in ({ResourceGroup})\r\n| count\r\n| extend Tittle=\"Number of Azure Arc SQL Instances:\"",
         "size": 4,
+        "title": " ",
         "queryType": 1,
         "resourceType": "microsoft.resourcegraph/resources",
         "crossComponentResources": [
@@ -178,8 +180,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "resources\r\n| where type =~ \"Microsoft.AzureArcData/sqlServerInstances\"\r\n| where resourceGroup in ({ResourceGroup})\r\n| extend vCore = toint(properties.vCore)\r\n| summarize sum(vCore)\r\n| extend Tittle=\"Number of Azure Arc SQL Virtual cores:\"",
+        "query": "resources\r\n| where type =~ \"Microsoft.AzureArcData/sqlServerInstances\"\r\n| extend vCore = toint(properties.vCore)\r\n| extend edition = tostring(properties.edition)\r\n| extend Title = case(edition == \"Developer\", \"Developer\", \r\n                       edition == \"Standard\", \"Standard\", \r\n                       edition == \"Enterprise\", \"Enterprise\", \r\n                       \"Express\")\r\n| summarize sum(vCore) by Title,edition\r\n",
         "size": 4,
+        "title": "Virtual Cores by Edition",
         "queryType": 1,
         "resourceType": "microsoft.resourcegraph/resources",
         "crossComponentResources": [
@@ -188,15 +191,14 @@
         "visualization": "tiles",
         "tileSettings": {
           "titleContent": {
-            "columnMatch": "Tittle",
+            "columnMatch": "Title",
             "formatter": 1
           },
           "leftContent": {
             "columnMatch": "sum_vCore",
             "formatter": 12,
             "formatOptions": {
-              "min": 0,
-              "palette": "orange"
+              "palette": "auto"
             }
           },
           "showBorder": true,
@@ -204,7 +206,7 @@
         }
       },
       "customWidth": "50",
-      "name": "Instances - Copy"
+      "name": "Virtual Cores by Edition"
     },
     {
       "type": 3,
@@ -487,14 +489,14 @@
           "filter": true,
           "sortBy": [
             {
-              "itemKey": "$gen_thresholds_SqlExtensionInstalled_1",
+              "itemKey": "$gen_thresholds_AMAExtensionInstalled_2",
               "sortOrder": 1
             }
           ]
         },
         "sortBy": [
           {
-            "itemKey": "$gen_thresholds_SqlExtensionInstalled_1",
+            "itemKey": "$gen_thresholds_AMAExtensionInstalled_2",
             "sortOrder": 1
           }
         ]
@@ -503,7 +505,7 @@
     }
   ],
   "fallbackResourceIds": [
-    "/subscriptions/59b301d0-77eb-4a76-aba5-53cb5731c342/resourcegroups/rg-sentinel/providers/microsoft.operationalinsights/workspaces/laws-trsentinel"
+    "azure monitor"
   ],
   "fromTemplateId": "sentinel-UserWorkbook",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
