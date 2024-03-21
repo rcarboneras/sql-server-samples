@@ -171,8 +171,40 @@
           "size": "auto"
         }
       },
-      "customWidth": "75",
-      "name": "Instances"
+      "customWidth": "25",
+      "name": "vCores"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "resources\r\n| where type =~ \"Microsoft.AzureArcData/sqlServerInstances\"\r\n| extend vCore = toint(properties.vCore)\r\n| summarize sum(vCore)\r\n| extend Tittle=\"Number of Azure Arc SQL Virtual cores:\"",
+        "size": 4,
+        "queryType": 1,
+        "resourceType": "microsoft.resourcegraph/resources",
+        "crossComponentResources": [
+          "{Subscription}"
+        ],
+        "visualization": "tiles",
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "Tittle",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "sum_vCore",
+            "formatter": 12,
+            "formatOptions": {
+              "min": 0,
+              "palette": "orange"
+            }
+          },
+          "showBorder": true,
+          "size": "auto"
+        }
+      },
+      "customWidth": "50",
+      "name": "Instances - Copy"
     },
     {
       "type": 3,
@@ -369,8 +401,20 @@
             }
           ],
           "rowLimit": 500,
-          "filter": true
-        }
+          "filter": true,
+          "sortBy": [
+            {
+              "itemKey": "vcores",
+              "sortOrder": 2
+            }
+          ]
+        },
+        "sortBy": [
+          {
+            "itemKey": "vcores",
+            "sortOrder": 2
+          }
+        ]
       },
       "name": "query - 1"
     },
@@ -435,15 +479,15 @@
           "filter": true,
           "sortBy": [
             {
-              "itemKey": "NumberofInstances",
-              "sortOrder": 2
+              "itemKey": "$gen_thresholds_SqlExtensionInstalled_1",
+              "sortOrder": 1
             }
           ]
         },
         "sortBy": [
           {
-            "itemKey": "NumberofInstances",
-            "sortOrder": 2
+            "itemKey": "$gen_thresholds_SqlExtensionInstalled_1",
+            "sortOrder": 1
           }
         ]
       },
@@ -451,7 +495,7 @@
     }
   ],
   "fallbackResourceIds": [
-    "azure monitor"
+    "Azure Monitor"
   ],
   "fromTemplateId": "sentinel-UserWorkbook",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
