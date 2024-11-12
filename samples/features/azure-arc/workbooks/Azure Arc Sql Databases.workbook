@@ -33,7 +33,7 @@
               "durationMs": 86400000
             },
             "value": [
-              "/subscriptions/71ac1fd6-9ebc-4a20-9667-b873f7cee091"
+              "value::all"
             ]
           },
           {
@@ -57,7 +57,7 @@
     {
       "type": 1,
       "content": {
-        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.0\t\t  |\r\n"
+        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.1\t\t  |\r\n"
       },
       "conditionalVisibility": {
         "parameterName": "Help",
@@ -143,8 +143,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "resources\r\n| where type == \"microsoft.azurearcdata/sqlserverinstances/databases\"\r\n| extend compatibilityLevel =  tostring(properties['compatibilityLevel'])\r\n| extend lastFullBackup = properties['backupInformation']['lastFullBackup']\r\n| extend lastLogBackup = properties['backupInformation']['lastLogBackup']\r\n| extend Instance = split(['id'],'/Databases')[0]\r\n| extend Subscription = strcat(\"/subscriptions/\",subscriptionId)\r\n| project Subscription,ResourceGroup = strcat(\"/subscriptions/\",subscriptionId,\"/resourceGroups/\",resourceGroup), Instance, Database = id ,lastFullBackup = format_datetime(todatetime(lastFullBackup), \"yyyy-MM-dd HH:mm:ss\"),lastLogBackup = format_datetime(todatetime(lastLogBackup), \"yyyy-MM-dd HH:mm:ss\"),compatibilityLevel,recoveryMode = properties.recoveryMode",
+        "query": "resources\r\n| where type == \"microsoft.azurearcdata/sqlserverinstances/databases\"\r\n| extend CompLevel =  tostring(properties['compatibilityLevel'])\r\n| extend lastFullBackup = properties['backupInformation']['lastFullBackup']\r\n| extend lastLogBackup = properties['backupInformation']['lastLogBackup']\r\n| extend State = tostring(properties['state'])\r\n| extend spaceAvailableMB = toreal(properties['spaceAvailableMB'])\r\n| extend sizeMBraw = round(toreal(properties['sizeMB']),2)\r\n| extend spaceAvailablePCT = round((spaceAvailableMB/sizeMBraw)*100,2)\r\n| extend Size = case(\r\n    sizeMBraw >= (1024 * 1024), strcat(round(sizeMBraw/1024/1024,2), \" TB\"),\r\n    sizeMBraw >= 1024, strcat(round(sizeMBraw/1024,2), \" GB\"),\r\n    strcat(round(sizeMBraw,2), \" MB\"))\r\n| extend Instance = split(['id'],'/Databases')[0]\r\n| extend Subscription = strcat(\"/subscriptions/\",subscriptionId)\r\n| project Subscription,ResourceGroup = strcat(\"/subscriptions/\",subscriptionId,\"/resourceGroups/\",resourceGroup), Instance, Database = id ,State, lastFullBackup = format_datetime(todatetime(lastFullBackup), \"yyyy-MM-dd HH:mm:ss\"),lastLogBackup = format_datetime(todatetime(lastLogBackup), \"yyyy-MM-dd HH:mm:ss\"),CompLevel,RecoveryMode = properties.recoveryMode,Size,spaceAvailablePCT",
         "size": 3,
+        "showAnalytics": true,
         "title": "Databases Backup State",
         "queryType": 1,
         "resourceType": "microsoft.resourcegraph/resources",
@@ -154,33 +155,128 @@
         "gridSettings": {
           "formatters": [
             {
+              "columnMatch": "Subscription",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "35.5714ch"
+              }
+            },
+            {
+              "columnMatch": "ResourceGroup",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "18ch"
+              }
+            },
+            {
               "columnMatch": "Instance",
               "formatter": 13,
               "formatOptions": {
                 "linkTarget": "Resource",
-                "showIcon": true
+                "showIcon": true,
+                "customColumnWidthSetting": "19.4286ch"
               }
             },
             {
               "columnMatch": "Database",
               "formatter": 0,
               "formatOptions": {
-                "customColumnWidthSetting": "56.714ch"
+                "customColumnWidthSetting": "29.2857ch"
               }
+            },
+            {
+              "columnMatch": "State",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Online",
+                    "representation": "success",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Offline",
+                    "representation": "disabled",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "unknown",
+                    "text": "{0}{1}"
+                  }
+                ],
+                "customColumnWidthSetting": "10ch"
+              }
+            },
+            {
+              "columnMatch": "lastFullBackup",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "16.1429ch"
+              }
+            },
+            {
+              "columnMatch": "lastLogBackup",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "16.4286ch"
+              }
+            },
+            {
+              "columnMatch": "CompLevel",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "12.5714ch"
+              }
+            },
+            {
+              "columnMatch": "RecoveryMode",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "14.7143ch"
+              }
+            },
+            {
+              "columnMatch": "spaceAvailablePCT",
+              "formatter": 3,
+              "formatOptions": {
+                "palette": "redGreen"
+              },
+              "numberFormat": {
+                "unit": 1,
+                "options": {
+                  "style": "decimal"
+                }
+              }
+            },
+            {
+              "columnMatch": "compatibilityLevel",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "20ch"
+              }
+            },
+            {
+              "columnMatch": "recoveryMode",
+              "formatter": 1
             }
           ],
           "rowLimit": 1000,
           "filter": true,
           "sortBy": [
             {
-              "itemKey": "lastFullBackup",
+              "itemKey": "$gen_bar_spaceAvailablePCT_10",
               "sortOrder": 2
             }
           ]
         },
         "sortBy": [
           {
-            "itemKey": "lastFullBackup",
+            "itemKey": "$gen_bar_spaceAvailablePCT_10",
             "sortOrder": 2
           }
         ],
