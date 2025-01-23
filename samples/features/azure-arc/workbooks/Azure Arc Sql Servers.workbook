@@ -357,8 +357,13 @@
                 "thresholdsGrid": [
                   {
                     "operator": "==",
+                    "thresholdValue": "Expired",
+                    "representation": "4"
+                  },
+                  {
+                    "operator": "==",
                     "thresholdValue": "Disconnected",
-                    "representation": "3",
+                    "representation": "Disconnect",
                     "text": "{0}{1}"
                   },
                   {
