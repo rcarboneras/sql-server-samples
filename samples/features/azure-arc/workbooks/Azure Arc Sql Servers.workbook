@@ -329,7 +329,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "resources\r\n| where type =~ \"Microsoft.AzureArcData/sqlServerInstances\"\r\n| extend SQLInstance = id, AzureArcServer = tolower(tostring(properties.containerResourceId))\r\n| where SQLInstance like \"{SQLInstance}\"\r\n| where resourceGroup in ({ResourceGroup})\r\n| where AzureArcServer like \"{ServerName}\"\r\n| extend createdAt = format_datetime(todatetime(systemData.createdAt), 'yyyy-MM-dd hh:mm:ss')\r\n| extend resourceGroup = split(['id'],\"/providers\")[0]\r\n| extend version = tostring(properties.version)\r\n| extend edition = tostring(properties.edition)\r\n| extend Build = tostring(properties.currentVersion)\r\n| extend DefenderStatus = tostring(properties.azureDefenderStatus)\r\n| extend patchLevel = tostring(properties.patchLevel)\r\n| extend vcores = toint(properties.vCore)\r\n| join (resources\r\n| where type == 'microsoft.hybridcompute/machines/extensions' \r\n| where properties.type == \"WindowsAgent.SqlServer\"\r\n| order by ['id'] asc\r\n| extend License = case(properties.settings.LicenseType == \"Paid\",\"SA\",properties.settings.LicenseType == \"PAYG\",\"PAYG\",\"unset\")\r\n| extend Serverid = tolower(tostring(split(id,'/extensions/WindowsAgent.SqlServer')[0]))\r\n| parse properties with * 'uploadMessage : ' DPSMessage ';' *\r\n| parse properties with * 'uploadStatus : ' DPSStatus ';' *) on $left.AzureArcServer == $right.Serverid\r\n| join (resources\r\n| where type == \"microsoft.hybridcompute/machines\"\r\n| extend status = tostring(properties.status)\r\n| project id = tolower(id),status) on $left.AzureArcServer == $right.id\r\n| project subscriptionId,status,AzureArcServer,SQLInstance,resourceGroup,version,Build,patchLevel,edition,vcores,License,DPSStatus,DPSMessage,DefenderStatus\r\n",
+        "query": "resources\r\n| where type =~ \"Microsoft.AzureArcData/sqlServerInstances\"\r\n| extend SQLInstance = id, AzureArcServer = tolower(tostring(properties.containerResourceId))\r\n| where SQLInstance like \"{SQLInstance}\"\r\n| where resourceGroup in ({ResourceGroup})\r\n| where AzureArcServer like \"{ServerName}\"\r\n| extend createdAt = format_datetime(todatetime(systemData.createdAt), 'yyyy-MM-dd hh:mm:ss')\r\n| extend version = tostring(properties.version)\r\n| extend edition = tostring(properties.edition)\r\n| extend Build = tostring(properties.currentVersion)\r\n| extend DefenderStatus = tostring(properties.azureDefenderStatus)\r\n| extend patchLevel = tostring(properties.patchLevel)\r\n| extend vcores = toint(properties.vCore)\r\n| project subscriptionId,SQLInstance, AzureArcServer, resourceGroup, createdAt, version, edition, Build, patchLevel, vcores, DefenderStatus\r\n// Join to WindowsAgent.SqlServer extension data while ensuring all instances are expanded\r\n| join kind=inner ( \r\n    resources\r\n    | where type == 'microsoft.hybridcompute/machines/extensions' \r\n    | where properties.type == \"WindowsAgent.SqlServer\"\r\n    | extend License = case(properties.settings.LicenseType == \"Paid\",\"SA\",properties.settings.LicenseType == \"PAYG\",\"PAYG\",\"unset\")\r\n    | extend Serverid = tolower(tostring(split(id,'/extensions/WindowsAgent.SqlServer')[0])) \r\n    | parse properties with * 'uploadStatus : ' DPSStatus ';' *\r\n    | project Serverid, License, DPSStatus\r\n) on $left.AzureArcServer == $right.Serverid\r\n// Join to Hybrid Compute Machine data (expanding all instances per Arc Server)\r\n| join kind=inner ( \r\n    resources\r\n    | where type == \"microsoft.hybridcompute/machines\"\r\n    | extend status = tostring(properties.status)\r\n    | project id = tolower(id), status\r\n) on $left.AzureArcServer == $right.id\r\n| project subscriptionId, status, AzureArcServer, SQLInstance, resourceGroup, version, Build, patchLevel, edition, vcores, License, DPSStatus, DefenderStatus\r\n",
         "size": 3,
         "showAnalytics": true,
         "showExportToExcel": true,
@@ -515,20 +515,9 @@
             }
           ],
           "rowLimit": 500,
-          "filter": true,
-          "sortBy": [
-            {
-              "itemKey": "$gen_thresholds_DPSStatus_11",
-              "sortOrder": 1
-            }
-          ]
+          "filter": true
         },
-        "sortBy": [
-          {
-            "itemKey": "$gen_thresholds_DPSStatus_11",
-            "sortOrder": 1
-          }
-        ]
+        "sortBy": []
       },
       "name": "query - 1"
     },
