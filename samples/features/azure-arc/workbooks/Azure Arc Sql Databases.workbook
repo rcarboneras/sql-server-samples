@@ -57,7 +57,7 @@
     {
       "type": 1,
       "content": {
-        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.1\t\t  |\r\n"
+        "json": "## Release Notes\r\n| Key       | Value                                \t\t                |\r\n|-------------------|---------------------------------------------------------------|\r\n| `Version`\t\t\t| 1.2\t\t  |\r\n"
       },
       "conditionalVisibility": {
         "parameterName": "Help",
@@ -143,7 +143,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "resources\r\n| where type == \"microsoft.azurearcdata/sqlserverinstances/databases\"\r\n| extend CompLevel =  tostring(properties['compatibilityLevel'])\r\n| extend lastFullBackup = properties['backupInformation']['lastFullBackup']\r\n| extend lastLogBackup = properties['backupInformation']['lastLogBackup']\r\n| extend State = tostring(properties['state'])\r\n| extend spaceAvailableMB = toreal(properties['spaceAvailableMB'])\r\n| extend sizeMBraw = round(toreal(properties['sizeMB']),2)\r\n| extend spaceAvailablePCT = round((spaceAvailableMB/sizeMBraw)*100,2)\r\n| extend Size = case(\r\n    sizeMBraw >= (1024 * 1024), strcat(round(sizeMBraw/1024/1024,2), \" TB\"),\r\n    sizeMBraw >= 1024, strcat(round(sizeMBraw/1024,2), \" GB\"),\r\n    strcat(round(sizeMBraw,2), \" MB\"))\r\n| extend Instance = split(['id'],'/Databases')[0]\r\n| extend Subscription = strcat(\"/subscriptions/\",subscriptionId)\r\n| project Subscription,ResourceGroup = strcat(\"/subscriptions/\",subscriptionId,\"/resourceGroups/\",resourceGroup), Instance, Database = id ,State, lastFullBackup = format_datetime(todatetime(lastFullBackup), \"yyyy-MM-dd HH:mm:ss\"),lastLogBackup = format_datetime(todatetime(lastLogBackup), \"yyyy-MM-dd HH:mm:ss\"),CompLevel,RecoveryMode = properties.recoveryMode,Size,spaceAvailablePCT",
+        "query": "resources\r\n| where type == \"microsoft.azurearcdata/sqlserverinstances/databases\"\r\n| extend collationName = tostring(properties['collationName'])\r\n| extend CompLevel =  tostring(properties['compatibilityLevel'])\r\n| extend lastFullBackup = properties['backupInformation']['lastFullBackup']\r\n| extend lastLogBackup = properties['backupInformation']['lastLogBackup']\r\n| extend State = tostring(properties['state'])\r\n| extend spaceAvailableMB = toreal(properties['spaceAvailableMB'])\r\n| extend sizeMBraw = round(toreal(properties['sizeMB']),2)\r\n| extend spaceAvailablePCT = round((spaceAvailableMB/sizeMBraw)*100,2)\r\n| extend Size = case(\r\n    sizeMBraw >= (1024 * 1024), strcat(round(sizeMBraw/1024/1024,2), \" TB\"),\r\n    sizeMBraw >= 1024, strcat(round(sizeMBraw/1024,2), \" GB\"),\r\n    strcat(round(sizeMBraw,2), \" MB\"))\r\n| extend Instance = split(['id'],'/Databases')[0]\r\n| extend Subscription = strcat(\"/subscriptions/\",subscriptionId)\r\n| project Subscription,ResourceGroup = strcat(\"/subscriptions/\",subscriptionId,\"/resourceGroups/\",resourceGroup), Instance, Database = id , collationName, State, lastFullBackup = format_datetime(todatetime(lastFullBackup), \"yyyy-MM-dd HH:mm:ss\"),lastLogBackup = format_datetime(todatetime(lastLogBackup), \"yyyy-MM-dd HH:mm:ss\"),CompLevel,RecoveryMode = properties.recoveryMode,Size,spaceAvailablePCT",
         "size": 3,
         "showAnalytics": true,
         "title": "Databases Backup State",
@@ -266,20 +266,9 @@
             }
           ],
           "rowLimit": 1000,
-          "filter": true,
-          "sortBy": [
-            {
-              "itemKey": "$gen_bar_spaceAvailablePCT_10",
-              "sortOrder": 2
-            }
-          ]
+          "filter": true
         },
-        "sortBy": [
-          {
-            "itemKey": "$gen_bar_spaceAvailablePCT_10",
-            "sortOrder": 2
-          }
-        ],
+        "sortBy": [],
         "chartSettings": {
           "showMetrics": false,
           "showLegend": true
