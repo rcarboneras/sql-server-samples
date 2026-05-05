@@ -1,10 +1,10 @@
 {
   "properties": {
-    "lenses": {
-      "0": {
+    "lenses": [
+       {
         "order": 0,
-        "parts": {
-          "0": {
+        "parts": [
+           {
             "position": {
               "x": 0,
               "y": 0,
@@ -56,7 +56,7 @@
               }
             }
           },
-          "1": {
+           {
             "position": {
               "x": 3,
               "y": 0,
@@ -109,7 +109,7 @@
               }
             }
           },
-          "2": {
+           {
             "position": {
               "x": 9,
               "y": 0,
@@ -161,7 +161,7 @@
               }
             }
           },
-          "3": {
+           {
             "position": {
               "x": 12,
               "y": 0,
@@ -214,7 +214,7 @@
               }
             }
           },
-          "4": {
+           {
             "position": {
               "x": 0,
               "y": 5,
@@ -266,7 +266,7 @@
               }
             }
           },
-          "5": {
+           {
             "position": {
               "x": 0,
               "y": 9,
@@ -318,7 +318,7 @@
               }
             }
           },
-          "6": {
+           {
             "position": {
               "x": 0,
               "y": 13,
@@ -371,7 +371,7 @@
               }
             }
           },
-          "7": {
+           {
             "position": {
               "x": 6,
               "y": 13,
@@ -424,7 +424,7 @@
               }
             }
           },
-          "8": {
+           {
             "position": {
               "x": 13,
               "y": 13,
@@ -477,7 +477,7 @@
               }
             }
           },
-          "9": {
+           {
             "position": {
               "x": 0,
               "y": 19,
@@ -530,7 +530,7 @@
               }
             }
           },
-          "10": {
+           {
             "position": {
               "x": 6,
               "y": 19,
@@ -583,7 +583,7 @@
               }
             }
           },
-          "11": {
+           {
             "position": {
               "x": 12,
               "y": 19,
@@ -636,7 +636,7 @@
               }
             }
           },
-          "12": {
+           {
             "position": {
               "x": 0,
               "y": 25,
@@ -689,7 +689,7 @@
               }
             }
           },
-          "13": {
+           {
             "position": {
               "x": 6,
               "y": 25,
@@ -741,10 +741,64 @@
                 "subtitle": ""
               }
             }
+          },
+           {
+            "position": {
+              "x": 0,
+              "y": 30,
+              "colSpan": 19,
+              "rowSpan": 4
+            },
+            "metadata": {
+              "inputs": [
+                {
+                  "name": "partTitle",
+                  "value": "Query 1",
+                  "isOptional": true
+                },
+                {
+                  "name": "chartType",
+                  "isOptional": true
+                },
+                {
+                  "name": "isShared",
+                  "isOptional": true
+                },
+                {
+                  "name": "queryId",
+                  "isOptional": true
+                },
+                {
+                  "name": "formatResults",
+                  "isOptional": true
+                },
+                {
+                  "name": "queryScope",
+                  "value": {
+                    "scope": 0,
+                    "values": []
+                  },
+                  "isOptional": true
+                },
+                {
+                  "name": "query",
+                  "value": "resources\r\n    | where type =~ 'microsoft.hybridcompute/machines/extensions'\r\n    | where properties.type in ('WindowsAgent.SqlServer','LinuxAgent.SqlServer')\r\n    | parse id with * '/providers/Microsoft.HybridCompute/machines/' machineName '/extensions/' *\r\n    | parse properties with * 'uploadStatus : ' uploadStatus ';' *\r\n    | project uploadStatus, subscriptionId, resourceGroup, machineName\r\n    | where uploadStatus !in ('OK') //comment this out to see all upload stats\r\n    | order by uploadStatus desc",
+                  "isOptional": true
+                }
+              ],
+              "type": "Extension/HubsExtension/PartType/ArgQueryGridTile",
+              "settings": {
+                "content": {}
+              },
+              "partHeader": {
+                "title": "Servers with Errors communicating with Azure DPS Service",
+                "subtitle": "For more information see https://learn.microsoft.com/en-us/sql/sql-server/azure-arc/troubleshoot-telemetry-endpoint"
+              }
+            }
           }
-        }
+        ]
       }
-    },
+    ],
     "metadata": {
       "model": {
         "timeRange": {
@@ -765,5 +819,5 @@
   "tags": {
     "hidden-title": "SQL Server Instances"
   },
-  "apiVersion": "2015-08-01-preview"
+  "apiVersion": "2022-12-01-preview"
 }
