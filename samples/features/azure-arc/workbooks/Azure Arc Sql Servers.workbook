@@ -559,7 +559,7 @@
       "content": {
         "version": "KqlItem/1.0",
         "query": "resources\r\n| where type =~ \"microsoft.hybridcompute/machines\"\r\n| where name like \"{ServerName}\"\r\n| where resourceGroup in ({ResourceGroup})\r\n| where properties.mssqlDiscovered == true\r\n| extend id = tolower(id)\r\n| join kind=leftouter (resources\r\n| where type =~ \"microsoft.hybridcompute/machines/extensions\"\r\n| where properties.type in (\"WindowsAgent.SqlServer\", \"AzureMonitorWindowsAgent\")\r\n| extend ArcServerResourceId = tolower(tostring(split(id, \"/extensions\")[0]))\r\n| project ArcServerResourceId, ExtensionType = tostring(properties.type), ExtensionState = tostring(properties.provisioningState)\r\n| summarize SqlExtensionInstalled = countif(ExtensionType == \"WindowsAgent.SqlServer\" and ExtensionState == \"Succeeded\"), AMAExtensionInstalled = countif(ExtensionType == \"AzureMonitorWindowsAgent\" and ExtensionState == \"Succeeded\") by ArcServerResourceId)\r\non $left.id == $right.ArcServerResourceId\r\n| join kind=leftouter (resources\r\n| where type =~ \"microsoft.azurearcdata/sqlserverinstances\"\r\n| project ArcServerId = tolower(tostring(properties.containerResourceId)), SqlServerId = id, InstanceName = properties.instanceName, Version = properties.version\r\n| summarize ArcSqlServerInstances = make_list(split(SqlServerId, \"/\")[8]), NumberofInstances = count() by ArcServerId)\r\non $left.id == $right.ArcServerId\r\n| project ArcServer = id, SqlExtensionInstalled = (SqlExtensionInstalled==1), AMAExtensionInstalled = (AMAExtensionInstalled == 1), NumberofInstances, ArcSqlServerInstances\r\n",
-        "size": 0,
+        "size": 3,
         "showAnalytics": true,
         "title": "Extensions and Instances per server",
         "queryType": 1,
@@ -629,10 +629,101 @@
         ]
       },
       "name": "query - 0"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "ESU Licenses",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\r\n| where type =~ 'microsoft.hybridcompute/machines/extensions'\r\n| where properties.type == 'WindowsAgent.SqlServer'\r\n| where resourceGroup in ({ResourceGroup})\r\n| extend serverResourceId = tolower(tostring(split(id, '/extensions/')[0]))\r\n| extend serverNameFilter = tostring(split(serverResourceId, '/')[8])\r\n| where serverResourceId like '{ServerName}' or serverNameFilter like '{ServerName}'\r\n| extend subscriptionId = strcat('/subscriptions/', subscriptionId)\r\n| extend resourceGroup = strcat('/subscriptions/', tostring(split(subscriptionId, '/')[2]), '/resourceGroups/', resourceGroup)\r\n| extend serverName = serverResourceId\r\n| extend esuEnabled = tolower(tostring(properties.settings.enableExtendedSecurityUpdates))\r\n| extend usePhysicalCoreEsu = tolower(tostring(properties.settings.UseEsuPhysicalCoreLicense))\r\n| extend esuEnabled = iff(isempty(esuEnabled), 'false', esuEnabled)\r\n| extend usePhysicalCoreEsu = iff(isempty(usePhysicalCoreEsu), 'false', usePhysicalCoreEsu)\r\n| project subscriptionId, resourceGroup, serverName, ESUEnabled = esuEnabled, PhysicalCore = iff(usePhysicalCoreEsu == 'true', 'Yes', 'No')\r\n| order by serverName asc",
+              "size": 0,
+              "showAnalytics": true,
+              "title": "ESU License Settings by Server",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "subscriptionId",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": "Resource",
+                      "showIcon": true,
+                      "customColumnWidthSetting": "37.7143ch"
+                    }
+                  },
+                  {
+                    "columnMatch": "resourceGroup",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": "Resource",
+                      "showIcon": true,
+                      "customColumnWidthSetting": "18ch"
+                    }
+                  },
+                  {
+                    "columnMatch": "serverName",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": "Resource",
+                      "showIcon": true,
+                      "customColumnWidthSetting": "14ch"
+                    }
+                  },
+                  {
+                    "columnMatch": "ESUEnabled",
+                    "formatter": 18,
+                    "formatOptions": {
+                      "thresholdsOptions": "icons",
+                      "thresholdsGrid": [
+                        {
+                          "operator": "==",
+                          "thresholdValue": "true",
+                          "representation": "success",
+                          "text": "{0}{1}"
+                        },
+                        {
+                          "operator": "Default",
+                          "thresholdValue": null,
+                          "representation": "3",
+                          "text": "{0}{1}"
+                        }
+                      ],
+                      "customColumnWidthSetting": "12ch"
+                    }
+                  },
+                  {
+                    "columnMatch": "PhysicalCore",
+                    "formatter": 0,
+                    "formatOptions": {
+                      "customColumnWidthSetting": "16ch"
+                    }
+                  }
+                ],
+                "rowLimit": 500,
+                "filter": true
+              }
+            },
+            "name": "ESU Licenses Grid"
+          }
+        ]
+      },
+      "name": "ESU Licenses"
     }
   ],
   "fallbackResourceIds": [
-    "Azure Monitor"
+    "azure monitor"
   ],
   "fromTemplateId": "sentinel-UserWorkbook",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
