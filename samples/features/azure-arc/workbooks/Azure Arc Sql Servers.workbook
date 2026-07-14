@@ -641,7 +641,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "resources\r\n| where type =~ 'microsoft.hybridcompute/machines/extensions'\r\n| where properties.type == 'WindowsAgent.SqlServer'\r\n| where resourceGroup in ({ResourceGroup})\r\n| extend serverResourceId = tolower(tostring(split(id, '/extensions/')[0]))\r\n| extend serverNameFilter = tostring(split(serverResourceId, '/')[8])\r\n| where serverResourceId like '{ServerName}' or serverNameFilter like '{ServerName}'\r\n| extend subscriptionId = strcat('/subscriptions/', subscriptionId)\r\n| extend resourceGroup = strcat('/subscriptions/', tostring(split(subscriptionId, '/')[2]), '/resourceGroups/', resourceGroup)\r\n| extend serverName = serverResourceId\r\n| extend esuEnabled = tolower(tostring(properties.settings.enableExtendedSecurityUpdates))\r\n| extend usePhysicalCoreEsu = tolower(tostring(properties.settings.UseEsuPhysicalCoreLicense))\r\n| extend esuEnabled = iff(isempty(esuEnabled), 'false', esuEnabled)\r\n| extend usePhysicalCoreEsu = iff(isempty(usePhysicalCoreEsu), 'false', usePhysicalCoreEsu)\r\n| project subscriptionId, resourceGroup, serverName, ESUEnabled = esuEnabled, PhysicalCore = iff(usePhysicalCoreEsu == 'true', 'Yes', 'No')\r\n| order by serverName asc",
+              "query": "resources\r\n| where type =~ 'microsoft.hybridcompute/machines/extensions'\r\n| where properties.type == 'WindowsAgent.SqlServer'\r\n| where resourceGroup in ({ResourceGroup})\r\n| extend serverResourceId = tolower(tostring(split(id, '/extensions/')[0]))\r\n| extend serverNameFilter = tostring(split(serverResourceId, '/')[8])\r\n| where serverResourceId like '{ServerName}' or serverNameFilter like '{ServerName}'\r\n| extend subscriptionId = strcat('/subscriptions/', subscriptionId)\r\n| extend resourceGroup = strcat('/subscriptions/', tostring(split(subscriptionId, '/')[2]), '/resourceGroups/', resourceGroup)\r\n| extend serverName = serverResourceId\r\n| extend esuEnabled = tolower(tostring(properties.settings.enableExtendedSecurityUpdates))\r\n| extend usePhysicalCoreEsu = tolower(tostring(properties.settings.UseEsuPhysicalCoreLicense))\r\n| extend esuEnabled = iff(isempty(esuEnabled), 'false', esuEnabled)\r\n| extend usePhysicalCoreEsu = iff(isempty(usePhysicalCoreEsu), 'false', usePhysicalCoreEsu)\r\n| join kind=leftouter (resources\r\n| where type =~ 'microsoft.azurearcdata/sqlserverinstances'\r\n| extend ArcServerId = tolower(tostring(properties.containerResourceId))\r\n| extend InstanceVersion = tostring(properties.version)\r\n| summarize SQLVersion = strcat_array(make_set(InstanceVersion), ', ') by ArcServerId) on $left.serverResourceId == $right.ArcServerId\r\n| project subscriptionId, resourceGroup, serverName, SQLVersion = iff(isempty(SQLVersion), 'N/A', SQLVersion), ESUEnabled = esuEnabled, PhysicalCore = iff(usePhysicalCoreEsu == 'true', 'Yes', 'No')\r\n| order by serverName asc",
               "size": 0,
               "showAnalytics": true,
               "title": "ESU License Settings by Server",
@@ -669,7 +669,7 @@
                     "formatOptions": {
                       "linkTarget": "Resource",
                       "showIcon": true,
-                      "customColumnWidthSetting": "18ch"
+                      "customColumnWidthSetting": "21ch"
                     }
                   },
                   {
@@ -678,7 +678,14 @@
                     "formatOptions": {
                       "linkTarget": "Resource",
                       "showIcon": true,
-                      "customColumnWidthSetting": "14ch"
+                      "customColumnWidthSetting": "25.7143ch"
+                    }
+                  },
+                  {
+                    "columnMatch": "SQLVersion",
+                    "formatter": 0,
+                    "formatOptions": {
+                      "customColumnWidthSetting": "35.4286ch"
                     }
                   },
                   {
@@ -700,7 +707,7 @@
                           "text": "{0}{1}"
                         }
                       ],
-                      "customColumnWidthSetting": "12ch"
+                      "customColumnWidthSetting": "18.7143ch"
                     }
                   },
                   {
